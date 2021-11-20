@@ -7,7 +7,7 @@ const statuslist = {
     error: 'error',
 }
 
-const intialState = {
+const intialState = localStorage.getItem('allPokemon')?JSON.parse(localStorage.getItem('allPokemon')):{
     status:statuslist.idle,
     count: 0,
     results: []

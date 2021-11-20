@@ -11,11 +11,15 @@ import { useHistory } from 'react-router';
 
 export default function Home() {
     let pokemon = useSelector(state => state.allPokemon);
+    let [list, setList] = React.useState([{status:'process',data:[]}])
     let dispatch = useDispatch();
     let history = useHistory();
+    // React.useEffect(() => {
+    //     dispatch(fetchAllPokemon());
+    // }, [dispatch]);
     React.useEffect(() => {
-        dispatch(fetchAllPokemon());
-    }, [dispatch]);
+        randomize();
+    }, []);
 
     const onClickButton =(e) =>{ 
         console.log(e)
@@ -23,16 +27,25 @@ export default function Home() {
         history.push('/pokemon');
     }
 
+    const randomize = () => {
+        let _list = []
+        for (let i = 0; i < 20; i++) {
+            let index = Math.floor(Math.random() * pokemon.results.length);
+            _list.push(pokemon.results[index]);
+        }
+        setList(_list);
+    }
+
     return (
         <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2'>
-            {pokemon.status === "process" && !pokemon.results.length ? (
+            {list.status === "process" && !list.data.length ? (
                 <div className="flex justify-center">
-                    <BounceLoader color="red" />
+                  <BounceLoader color="red" />
                 </div>
-            ) : null}
-            {pokemon.results.length && pokemon.results.map((_pokemon, index) => {
+              ) : null}
+            {list.length&& list.map((_pokemon, index) => {
                 return (
-                    <div key={index} >
+                    < div key={index} >
                         <Pokemoncard name={_pokemon.name} url={_pokemon.url} _onClick = {onClickButton}/>
                     </div>
                 )

@@ -8,12 +8,13 @@ const statuslist = {
 }
 
 const intialState = {
-    status:statuslist.idle,
-    results: [{
+    status:statuslist.process,
+    results: {
+        types: [],
+        moves: [],
+        id: '',
         name:'',
-        moves:[],
-        types:[]
-    }]
+    }
 };
 
 export default function reducer(state = intialState, action) {
