@@ -3,7 +3,7 @@ import Pokemoncard from '../../components/Pokemoncard';
 import Botnav from '../../components/Botnav';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllPokemon } from '../../features/Pokemon/action';
-import { fetchPokemon } from '../../features/SelectedPokemon/action';
+import { fetchPokemon, successFetchingPokemon } from '../../features/SelectedPokemon/action';
 import BounceLoader from 'react-spinners/BounceLoader';
 import { getPokemon } from '../../api/pokemonapi';
 import { useHistory } from 'react-router';
@@ -11,46 +11,55 @@ import { useHistory } from 'react-router';
 
 export default function Home() {
     let pokemon = useSelector(state => state.allPokemon);
-    let [list, setList] = React.useState([{status:'process',data:[]}])
+    let [list, setList] = React.useState({status:'process',data:[]})
     let dispatch = useDispatch();
     let history = useHistory();
-    // React.useEffect(() => {
-    //     dispatch(fetchAllPokemon());
-    // }, [dispatch]);
+    let [refresh,setRefresh] = React.useState(false)
     React.useEffect(() => {
         randomize();
-    }, []);
+    },[refresh]);
 
-    const onClickButton =(e) =>{ 
-        console.log(e)
-        dispatch(fetchPokemon(e));
+    const onClickButton =(poke) =>{ 
+        console.log(poke)
+        dispatch(successFetchingPokemon({data:poke}));
         history.push('/pokemon');
     }
 
-    const randomize = () => {
+    const randomize = async () => {
         let _list = []
-        for (let i = 0; i < 20; i++) {
-            let index = Math.floor(Math.random() * pokemon.results.length);
-            _list.push(pokemon.results[index]);
+        if(pokemon.results.length>1){
+            // for (let i = 0; i < 20; i++) {
+            //     let index = Math.floor(Math.random() * pokemon.results.length);
+            //     _list.push(pokemon.results[index]);
+            // }
+            for(let i =0;i<20;i++){
+                let index = Math.floor(Math.random() * pokemon.results.length);
+                let {data} = await getPokemon(pokemon.results[index].url);
+                // console.log(data);
+                _list.push(data);
+            }
+            setList({status:'success',data:_list});    
         }
-        setList(_list);
+    }
+    const onRefresh=()=>{
+        setRefresh(!refresh);
     }
 
     return (
         <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2'>
-            {list.status === "process" && !list.data.length ? (
+            {/* {list.status === "process"? (
                 <div className="flex justify-center">
                   <BounceLoader color="red" />
                 </div>
-              ) : null}
-            {list.length&& list.map((_pokemon, index) => {
+              ) : null} */}
+            {list.status === "success"&& list.data.map((_pokemon, index) => {
                 return (
-                    < div key={index} >
-                        <Pokemoncard name={_pokemon.name} url={_pokemon.url} _onClick = {onClickButton}/>
+                    < div key={index} > 
+                        <Pokemoncard poke={_pokemon} _onClick={onClickButton}/>
                     </div>
                 )
             })}
-            <Botnav />
+            <Botnav home={true} _onRefresh={onRefresh}/>
         </div >
     )
 }

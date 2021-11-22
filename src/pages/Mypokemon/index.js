@@ -1,53 +1,97 @@
 import * as React from 'react';
-import Pokemoncard from '../../components/Pokemoncard';
 import Botnav from '../../components/Botnav';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllPokemon } from '../../features/Pokemon/action';
-import { fetchPokemon } from '../../features/SelectedPokemon/action';
 import BounceLoader from 'react-spinners/BounceLoader';
-import { getPokemon } from '../../api/pokemonapi';
-import { useHistory } from 'react-router';
 import Mypokemoncard from '../../components/Mypokemoncard';
+import { fetchMyPokemon } from '../../features/Mypokemon/action';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content'
+import { deletePokemon, releasePokemon, renamePokemon } from '../../api/mypokemon';
 
 
 export default function Mypokemon() {
-    let pokemon = useSelector(state => state.allPokemon);
-    let [list, setList] = React.useState([{status:'process',data:[]}])
+    let pokemon = useSelector(state => state.myPokemon.pokemon);
+    let user = useSelector(state => state.auth.user)
+    let [status, setStatus] = React.useState('idle')
     let dispatch = useDispatch();
-    let history = useHistory();
+    const MySwal = withReactContent(Swal)
     // React.useEffect(() => {
     //     dispatch(fetchAllPokemon());
     // }, [dispatch]);
     React.useEffect(() => {
-        randomize();
-    }, []);
+        dispatch(fetchMyPokemon(user.id));
+    }, [status]);
 
-    const onClickButton =(e) =>{ 
-        console.log(e)
-        dispatch(fetchPokemon(e));
-        history.push('/pokemon');
-    }
-
-    const randomize = () => {
-        let _list = []
-        for (let i = 0; i < 20; i++) {
-            let index = Math.floor(Math.random() * pokemon.results.length);
-            _list.push(pokemon.results[index]);
+    const onClickButtonRemove = async (id) => {
+        let { data: { can, message } } = await releasePokemon();
+        if (!can.isOk) {
+            MySwal.fire({
+                title: message,
+                text: can.num,
+                icon: 'error',
+            })
+        } else {
+            setStatus('process')
+            MySwal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, release it!',
+                preConfirm: async () => {
+                    let data = await deletePokemon(id);
+                    return data
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    MySwal.fire(
+                        'Deleted!',
+                        'Your file has been deleted.',
+                        'success'
+                    )
+                    setStatus('idle')
+                }
+            })
         }
-        setList(_list);
     }
-
+    const onClickButtonRename = async (id) => {
+        setStatus('process')
+        MySwal.fire({
+            title: 'Enter new name',
+            input: 'text',
+            showCancelButton: true,
+            confirmButtonText: 'Confirm',
+            showLoaderOnConfirm: true,
+            preConfirm: async (name) => {
+                let payload = { name };
+                let { data } = await renamePokemon(id, payload);
+                return data;
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                MySwal.fire({
+                    title: 'Success',
+                    text: `your pokemon renamed to ${result.value.name}`,
+                    icon: 'success'
+                }
+                )
+                setStatus('idle')
+            }
+        })
+    }
     return (
         <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2'>
-            {list.status === "process" && !list.data.length ? (
+            {!pokemon ? (
                 <div className="flex justify-center">
-                  <BounceLoader color="red" />
+                    <BounceLoader color="red" />
                 </div>
-              ) : null}
-            {list.length&& list.map((_pokemon, index) => {
+            ) : null}
+            {pokemon && pokemon.map((_pokemon, index) => {
                 return (
                     < div key={index} >
-                        <Mypokemoncard name={_pokemon.name} url={_pokemon.url} _onClick = {onClickButton}/>
+                        <Mypokemoncard name={_pokemon.name} id={_pokemon.id} pokemonId={_pokemon.pokemon_id} _onRemove={onClickButtonRemove} _onRename={onClickButtonRename} />
                     </div>
                 )
             })}
