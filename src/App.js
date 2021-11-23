@@ -16,6 +16,7 @@ import Pokemon from './pages/Pokemon';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Mypokemon from './pages/Mypokemon';
+import Logout from './pages/Logout';
 
 
 
@@ -31,6 +32,7 @@ function App() {
           <Switch>
             <Route path="/register" component={Register} />
             <Route path="/login" component={Login} />
+            <Route path="/logout" component={Logout}/>
             <Route path="/pokemon" component={Pokemon} />
             <Route path="/mypokemon" component={Mypokemon} />
             <Route path="/" component={Home} />

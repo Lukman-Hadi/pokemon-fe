@@ -9,15 +9,9 @@ export function userLogin(user){
   }
 }
 
-export function fetchMyPokemon(pokemon){
-  return {
-    type: FETCH_MY_POKEMON,
-    pokemon
-  }
-}
-
 // (3) action userLogout
 export function userLogout(){
+  localStorage.clear();
   return {
     type: USER_LOGOUT
   }

@@ -20,16 +20,14 @@ export default function Register() {
     const onSubmit = async formData => {
         setStatus(statuslist.process);
         console.log(formData);
-        let { data } = await registerUser(formData);
-        // if (data.error) {
-        //     let fields = Object.keys(data.fields);
-        //     fields.forEach(field => alert(`${field} error, ${data.fields[field]?.properties?.message}`))
-        //     setStatus(statuslist.error);
-        //     return;
-        // }
-        setStatus(statuslist.success);
-        alert('Success, go to login page')
-        history.push('/login');
+        let res = await registerUser(formData);
+        if(res.error){
+            alert(res.message)
+            setStatus(statuslist.idle);
+        }else{
+            alert(res.message)
+            history.push('/login');
+        }
     }
     return (
         <div class="flex items-center justify-center">

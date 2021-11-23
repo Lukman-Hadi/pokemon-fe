@@ -13,14 +13,16 @@ export default function Mypokemon() {
     let pokemon = useSelector(state => state.myPokemon.pokemon);
     let user = useSelector(state => state.auth.user)
     let [status, setStatus] = React.useState('idle')
+    let [refresh, setRefresh] = React.useState(false)
     let dispatch = useDispatch();
     const MySwal = withReactContent(Swal)
-    // React.useEffect(() => {
-    //     dispatch(fetchAllPokemon());
-    // }, [dispatch]);
     React.useEffect(() => {
         dispatch(fetchMyPokemon(user.id));
-    }, [status]);
+    }, [status,refresh]);
+
+    const onRefresh=()=>{
+        setRefresh(!refresh);
+    }
 
     const onClickButtonRemove = async (id) => {
         let { data: { can, message } } = await releasePokemon();
@@ -95,7 +97,7 @@ export default function Mypokemon() {
                     </div>
                 )
             })}
-            <Botnav />
+            <Botnav _onRefresh={onRefresh}/>
         </div >
     )
 }

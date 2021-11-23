@@ -42,16 +42,17 @@ export default function Home() {
         }
     }
     const onRefresh=()=>{
+        setList({status:'process',data:[]});
         setRefresh(!refresh);
     }
 
     return (
-        <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2'>
-            {/* {list.status === "process"? (
+        <div className={`${list.status === "process"?'':'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2'}`}>
+            {list.status === "process"? (
                 <div className="flex justify-center">
                   <BounceLoader color="red" />
                 </div>
-              ) : null} */}
+              ) : null}
             {list.status === "success"&& list.data.map((_pokemon, index) => {
                 return (
                     < div key={index} > 
